@@ -4,12 +4,20 @@ import Axios from "axios";
 
 class Order extends React.Component {
    state = {
-      order: {
-         count: 0
-      }
+      data: []
    };
 
    componentDidMount() {
+      const data = Axios.get("https://foodx-api.herokuapp.com/api/orders")
+         .then(res => {
+            this.setState({
+               data: res.data
+            });
+         })
+         .catch(err => {
+            console.log(err);
+         });
+
       const pusher = new Pusher("93d33b6256a37fd6c03e", {
          cluster: "ap2",
          encrypted: true
@@ -17,37 +25,54 @@ class Order extends React.Component {
       const channel = pusher.subscribe("fassos");
       channel.bind("order", data => {
          this.setState({
-            order: {
-               count: data.count
-            }
+            data: [...this.state.data, data]
          });
-         console.log("From pusher ", data);
       });
    }
-   handleSubmit = () => {
-      // Axios.post("http://127.0.0.1:4000/message", this.state.message);
-   };
-   handleChange = e => {
-      this.setState({ order: { count: e.target.value } }, () => {
-         Axios.post("https://foodx-api.herokuapp.com/message", {
-            count: this.state.order.count
-         });
-      });
-   };
 
+   handleClick = data => {
+      console.log(data);
+      let { _id: id, quantity, createdTillNow } = data;
+      createdTillNow += createdTillNow + quantity;
+   };
    render() {
       return (
          <div>
-            {this.state.data}
-            Count {this.state.order.count}
-            <form>
-               <input
-                  type="number"
-                  onChange={this.handleChange}
-                  value={this.state.order.count}
-               />
-               <button onClick={this.handleSubmit}>Submit</button>
-            </form>
+            {this.state.data.length > 0 ? (
+               <table>
+                  <tr>
+                     <th> Name</th>
+                     <th> Quantity</th>
+                     <th>Created Till Now</th>
+                     <th> Predicted</th>
+                     <th>Status</th>
+                  </tr>
+                  {this.state.data.map((order, index) => {
+                     const {
+                        _id: id,
+                        name,
+                        quantity,
+                        createdTillNow,
+                        predictedValue
+                     } = order;
+                     return (
+                        <tr style={{ textAlign: "center" }} key={index}>
+                           <td key={index}>{name}</td>
+                           <td>{quantity}</td>
+                           <td>{createdTillNow}</td>
+                           <td>{predictedValue}</td>
+                           <td>
+                              <button onClick={() => this.handleClick(order)}>
+                                 Done
+                              </button>
+                           </td>
+                        </tr>
+                     );
+                  })}
+               </table>
+            ) : (
+               "Loading...."
+            )}
          </div>
       );
    }
