@@ -1,9 +1,15 @@
 import React from "react";
-import "semantic-ui-css/semantic.min.css";
+import { BrowserRouter, Route } from "react-router-dom";
 import Order from "./Components/Order";
-import BodyContainer from "./Components/WrapperContainer";
-import GlobalLoader from "./Components/Loader";
+import OrderForm from "./Components/OrderForm";
+import Home from "./Components/Home";
 
-const App = () => <BodyContainer />;
+const App = () => (
+   <BrowserRouter>
+      <Route exact path="/" component={Home} />
+      <Route exact path="/add" component={OrderForm} />
+      <Route exact path="/orders" component={Order} />
+   </BrowserRouter>
+);
 
 export default App;
